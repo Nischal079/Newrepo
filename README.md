@@ -1,4 +1,4 @@
 # Newrepo
-This is my first git repository.
+This is my git repository that contains my Projects.
 <br>
 Author - Nischal poudel
