@@ -24,20 +24,46 @@ export function AssetCard({ post, className }: AssetCardProps) {
   const liked = isLiked(post.id);
   const booked = isBooked(post.id);
 
+  // Determine if the post has media (photo or video)
+  const hasMedia = post.mediaUrl && (post.mediaUrl.endsWith('.jpg') || post.mediaUrl.endsWith('.jpeg') || post.mediaUrl.endsWith('.png') || post.mediaUrl.endsWith('.gif') || post.mediaUrl.endsWith('.mp4') || post.mediaUrl.endsWith('.mov')); // Add other video formats if needed
+
   return (
     <Card className={cn("flex flex-col overflow-hidden shadow-lg hover:shadow-accent/20 transition-shadow duration-300", className)}>
-      <div className="relative w-full h-48">
-        <Image
-          src={post.imageUrl}
-          alt={post.title}
-          data-ai-hint={post.aiHint}
-          fill
-          className="object-cover"
-        />
-      </div>
+      {
+        hasMedia ? (
+          <div className="relative w-full h-48">
+            {/* Render image or video based on media type */}
+            {post.mediaUrl.endsWith('.mp4') || post.mediaUrl.endsWith('.mov') ? (
+              <video src={post.mediaUrl} controls className="object-cover w-full h-full"></video>
+            ) : (
+              <Image
+                src={post.mediaUrl}
+                alt={post.title}
+                data-ai-hint={post.aiHint} // Assuming aiHint is still relevant for posts with media
+                fill
+                className="object-cover"
+              />
+            )}
+          </div>
+        ) : (
+          // Render the existing image if no mediaUrl is present
+          <div className="relative w-full h-48">
+             <Image
+              src={post.imageUrl}
+              alt={post.title}
+              data-ai-hint={post.aiHint}
+              fill
+              className="object-cover"
+            />
+          </div>
+        )
+      }
       <CardHeader>
         <CardTitle className="font-headline tracking-tight">{post.title}</CardTitle>
-        <CardDescription>{post.subtitle}</CardDescription>
+        {/* Display description for posts with media */}
+        {hasMedia && <CardDescription>{post.description}</CardDescription>}
+        {/* Display subtitle for existing assets without media */}
+        {!hasMedia && <CardDescription>{post.subtitle}</CardDescription>}
       </CardHeader>
       <CardContent className="flex-grow">
         {/* Additional details can go here */}
