@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { collection, addDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase'; // Import your Firestore instance
 
 const CreatePostPage: React.FC = () => {
   const [title, setTitle] = useState('');
@@ -29,8 +31,13 @@ const CreatePostPage: React.FC = () => {
 
       const { downloadURL } = await uploadResponse.json();
 
-      // TODO: Save post data to your database with title, description, and downloadURL
-      console.log('Post data to save:', { title, description, mediaURL: downloadURL });
+      // Save post data to Firestore
+      await addDoc(collection(db, 'posts'), {
+        title: title,
+        description: description,
+        mediaUrl: downloadURL,
+        createdAt: new Date(), // Add a timestamp
+      });
 
       // Reset form
       setTitle('');

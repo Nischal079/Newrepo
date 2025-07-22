@@ -47,15 +47,15 @@ export function AssetCard({ post, className }: AssetCardProps) {
           </div>
         ) : (
           // Render the existing image if no mediaUrl is present
-          <div className="relative w-full h-48">
-             <Image
-              src={post.imageUrl}
-              alt={post.title}
-              data-ai-hint={post.aiHint}
-              fill
-              className="object-cover"
-            />
-          </div>
+          (<div className="relative w-full h-48">
+            <Image
+             src={post.imageUrl}
+             alt={post.title}
+             data-ai-hint={post.aiHint}
+             fill
+             className="object-cover"
+           />
+          </div>)
         )
       }
       <CardHeader>
