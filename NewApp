@@ -1,0 +1,543 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class Post {
+  final String title;
+  final String subtitle;
+  final String imageUrl;
+  final String owner;
+
+  Post({
+    required this.title,
+    required this.subtitle,
+    required this.imageUrl,
+    required this.owner,
+  });
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'AssetHub',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: const AssetHub(),
+    );
+  }
+}
+
+class AssetHub extends StatefulWidget {
+  const AssetHub({super.key});
+
+  @override
+  _AssetHubState createState() => _AssetHubState();
+}
+
+class _AssetHubState extends State<AssetHub> {
+  int _selectedIndex = 0; // For navigation
+
+  // Sample posts (5 imaginary posts for reference)
+  final List<Post> posts = [
+    Post(
+      title: 'Cozy Room for Rent',
+      subtitle: 'Downtown City',
+      imageUrl: 'https://picsum.photos/400/200?random=1',
+      owner: 'Alice',
+    ),
+    Post(
+      title: 'Vintage Car Available',
+      subtitle: 'Red Convertible, 1965',
+      imageUrl: 'https://picsum.photos/400/200?random=2',
+      owner: 'Bob',
+    ),
+    Post(
+      title: 'Beachside House',
+      subtitle: 'Ocean view property',
+      imageUrl: 'https://picsum.photos/400/200?random=3',
+      owner: 'Charlie',
+    ),
+    Post(
+      title: 'Mountain Land Plot',
+      subtitle: 'Secluded land in hills',
+      imageUrl: 'https://picsum.photos/400/200?random=4',
+      owner: 'Dave',
+    ),
+    Post(
+      title: 'Downtown Apartment',
+      subtitle: 'Modern 2-bedroom apartment',
+      imageUrl: 'https://picsum.photos/400/200?random=5',
+      owner: 'Eve',
+    ),
+  ];
+
+  final List<Post> likedPosts = [];
+  final List<Post> bookedPosts = [];
+
+  void _onNope(Post post) {
+    setState(() {
+      posts.remove(post);
+      likedPosts.remove(post);
+      bookedPosts.remove(post);
+    });
+  }
+
+  void _onBook(Post post) {
+    setState(() {
+      if (!bookedPosts.contains(post)) {
+        bookedPosts.add(post);
+      }
+    });
+  }
+
+  void _onToggleLike(Post post) {
+    setState(() {
+      if (likedPosts.contains(post)) {
+        likedPosts.remove(post);
+      } else {
+        likedPosts.add(post);
+      }
+    });
+  }
+
+  // Builds the appropriate page based on selected index
+  Widget _getPage(int index) {
+    switch (index) {
+      case 0:
+        return HomePage(
+          posts: posts,
+          likedPosts: likedPosts,
+          bookedPosts: bookedPosts,
+          onNope: _onNope,
+          onBook: _onBook,
+          onToggleLike: _onToggleLike,
+        );
+      case 1:
+        return LikedPostsPage(
+          likedPosts: likedPosts,
+          bookedPosts: bookedPosts,
+          onNope: _onNope,
+          onBook: _onBook,
+          onToggleLike: _onToggleLike,
+        );
+      case 2:
+        return ChatListPage(
+          bookedPosts: bookedPosts,
+        );
+      case 3:
+        return const AboutPage();
+      default:
+        return HomePage(
+          posts: posts,
+          likedPosts: likedPosts,
+          bookedPosts: bookedPosts,
+          onNope: _onNope,
+          onBook: _onBook,
+          onToggleLike: _onToggleLike,
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('AssetHub')),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            const DrawerHeader(
+              decoration: BoxDecoration(color: Colors.blue),
+              child: Text(
+                'AssetHub Menu',
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.home),
+              title: const Text('Home'),
+              onTap: () {
+                setState(() {
+                  _selectedIndex = 0;
+                });
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.favorite),
+              title: const Text('Liked Assets'),
+              onTap: () {
+                setState(() {
+                  _selectedIndex = 1;
+                });
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.chat),
+              title: const Text('Chat'),
+              onTap: () {
+                setState(() {
+                  _selectedIndex = 2;
+                });
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.info),
+              title: const Text('About'),
+              onTap: () {
+                setState(() {
+                  _selectedIndex = 3;
+                });
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      ),
+      body: _getPage(_selectedIndex),
+    );
+  }
+}
+
+class PostCard extends StatelessWidget {
+  final Post post;
+  final bool isLiked;
+  final bool isBooked;
+  final VoidCallback onNope;
+  final VoidCallback onBook;
+  final VoidCallback onToggleLike;
+
+  const PostCard({
+    super.key,
+    required this.post,
+    required this.isLiked,
+    required this.isBooked,
+    required this.onNope,
+    required this.onBook,
+    required this.onToggleLike,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.all(8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Image.network(post.imageUrl, fit: BoxFit.cover, height: 150),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              post.title,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Text(post.subtitle),
+          ),
+          OverflowBar(
+            alignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              IconButton(
+                icon: const Icon(Icons.clear, color: Colors.red),
+                onPressed: onNope,
+              ),
+              ElevatedButton(
+                onPressed: isBooked ? null : onBook,
+                style: ElevatedButton.styleFrom(
+                  shape: const CircleBorder(),
+                  padding: const EdgeInsets.all(20),
+                  backgroundColor: isBooked ? Colors.grey : Colors.blue,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Book\nNow', textAlign: TextAlign.center),
+              ),
+              IconButton(
+                icon: Icon(
+                  isLiked ? Icons.favorite : Icons.favorite_border,
+                  color: isLiked ? Colors.pink : null,
+                ),
+                onPressed: onToggleLike,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class HomePage extends StatelessWidget {
+  final List<Post> posts;
+  final List<Post> likedPosts;
+  final List<Post> bookedPosts;
+  final Function(Post) onNope;
+  final Function(Post) onBook;
+  final Function(Post) onToggleLike;
+
+  const HomePage({
+    super.key,
+    required this.posts,
+    required this.likedPosts,
+    required this.bookedPosts,
+    required this.onNope,
+    required this.onBook,
+    required this.onToggleLike,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    List<Post> recommended = posts.take(2).toList();
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Text(
+              'Recommended Posts',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+          SizedBox(
+            height: 320, // Adjusted height to accommodate the PostCard content, especially the multi-line button text
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: recommended.length,
+              itemBuilder: (BuildContext context, int i) {
+                Post post = recommended[i];
+                return SizedBox(
+                  width: 300,
+                  child: PostCard(
+                    post: post,
+                    isLiked: likedPosts.contains(post),
+                    isBooked: bookedPosts.contains(post),
+                    onNope: () => onNope(post),
+                    onBook: () => onBook(post),
+                    onToggleLike: () => onToggleLike(post),
+                  ),
+                );
+              },
+            ),
+          ),
+          const Divider(),
+          const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Text(
+              'All Posts',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+          ListView.builder(
+            physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            itemCount: posts.length,
+            itemBuilder: (BuildContext context, int i) {
+              Post post = posts[i];
+              return PostCard(
+                post: post,
+                isLiked: likedPosts.contains(post),
+                isBooked: bookedPosts.contains(post),
+                onNope: () => onNope(post),
+                onBook: () => onBook(post),
+                onToggleLike: () => onToggleLike(post),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class LikedPostsPage extends StatelessWidget {
+  final List<Post> likedPosts;
+  final List<Post> bookedPosts;
+  final Function(Post) onNope;
+  final Function(Post) onBook;
+  final Function(Post) onToggleLike;
+
+  const LikedPostsPage({
+    super.key,
+    required this.likedPosts,
+    required this.bookedPosts,
+    required this.onNope,
+    required this.onBook,
+    required this.onToggleLike,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (likedPosts.isEmpty) {
+      return const Center(child: Text('No liked assets yet.'));
+    }
+    return ListView.builder(
+      itemCount: likedPosts.length,
+      itemBuilder: (BuildContext context, int i) {
+        Post post = likedPosts[i];
+        return PostCard(
+          post: post,
+          isLiked: likedPosts.contains(post),
+          isBooked: bookedPosts.contains(post),
+          onNope: () => onNope(post),
+          onBook: () => onBook(post),
+          onToggleLike: () => onToggleLike(post),
+        );
+      },
+    );
+  }
+}
+
+class ChatListPage extends StatelessWidget {
+  final List<Post> bookedPosts;
+
+  const ChatListPage({super.key, required this.bookedPosts});
+
+  @override
+  Widget build(BuildContext context) {
+    if (bookedPosts.isEmpty) {
+      return const Center(
+        child: Text(
+          'Chat is locked. Book an asset to start chatting.',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 16),
+        ),
+      );
+    }
+    return ListView.builder(
+      itemCount: bookedPosts.length,
+      itemBuilder: (BuildContext context, int i) {
+        Post post = bookedPosts[i];
+        return ListTile(
+          leading: CircleAvatar(child: Text(post.owner[0])),
+          title: Text('Chat with ${post.owner}'),
+          subtitle: Text(post.title),
+          onTap: () {
+            // Navigate to chat conversation page
+            Navigator.push<void>(
+              context,
+              MaterialPageRoute<void>(builder: (_) => ChatScreen(post: post)),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class AboutPage extends StatelessWidget {
+  const AboutPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Text(
+          'AssetHub\n\nApplication Developed by Nischal Poudel',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 18),
+        ),
+      ),
+    );
+  }
+}
+
+// Chat conversation screen
+class ChatScreen extends StatefulWidget {
+  final Post post;
+  const ChatScreen({super.key, required this.post});
+
+  @override
+  _ChatScreenState createState() => _ChatScreenState();
+}
+
+class _ChatScreenState extends State<ChatScreen> {
+  final TextEditingController _messageController = TextEditingController();
+  final List<String> _messages = <String>[
+    'Hi, I am interested in booking your asset.',
+    'Hello! The asset is available. How can I help?',
+  ];
+
+  void _sendMessage() {
+    if (_messageController.text.isNotEmpty) {
+      setState(() {
+        _messages.add(_messageController.text);
+        _messageController.clear();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Chat with ${widget.post.owner}')),
+      body: Column(
+        children: <Widget>[
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(12),
+              itemCount: _messages.length,
+              itemBuilder: (BuildContext context, int i) {
+                // For demonstration, alternate messages. In a real app, this would
+                // be based on sender ID from message data.
+                bool isUser = (i % 2 == 0);
+                return Align(
+                  alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    padding: const EdgeInsets.all(10),
+                    constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * 0.75),
+                    decoration: BoxDecoration(
+                      color: isUser ? Colors.blue[100] : Colors.grey[300],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(_messages[i]),
+                  ),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: TextField(
+                    controller: _messageController,
+                    decoration: const InputDecoration(
+                      hintText: 'Type a message...',
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    ),
+                    onSubmitted: (_) => _sendMessage(),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.send),
+                  onPressed: _sendMessage,
+                  color: Colors.blue,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
